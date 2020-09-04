@@ -1,15 +1,17 @@
 
-% Test script for generating
+% Example script for training a semantic segmentation object
+% (WholeBloodSegmenter).
 
+% Define image parameters
 imgSize = [512,688];
+% Images are chopped up into random patches to fit onto the GPU.
 patchSize = [256,256];
-fillValue = 180;
 
 mySeg = WholeBloodSegmenter(patchSize, 'resnet50');
 
-mySeg.setLabelDir('\\Flexo\MicroscopyData\Bioengineering\UV Microscopy\Processed data\Malaria imaging\Processed for publication\Matlab RBC Segmentation training\U-net results UVM-2019-05-30-15-45-12');
-mySeg.setInputDir('\\Flexo\MicroscopyData\Bioengineering\UV Microscopy\Processed data\Malaria imaging\Processed for publication\Matlab RBC Segmentation training\Copy of UVM-2019-05-30-15-45-12 refocused');
-mySeg.setOutputDir('\\Flexo\MicroscopyData\Bioengineering\UV Microscopy\Processed data\Malaria imaging\Processed for publication\Matlab RBC Segmentation training\Output');
+mySeg.setLabelDir('\\PathToLabelMatrices');
+mySeg.setInputDir('\\PathToRawData');
+mySeg.setOutputDir('\\PathToOutputFolder');
 
 mySeg.partitionData();
 mySeg.enableAugmenter(augmenter);
@@ -22,10 +24,6 @@ augmenter = imageDataAugmenter(...
     'RandYScale', [.7, 1.5], ...
     'RandXTranslation',[-10 10], ...
     'RandYTranslation',[-10 10]);
-
-% mySeg.balanceClassWeights();
-%     'Momentum',0.9, ...
-%     'L2Regularization',0.0001, ...
 
 opts = trainingOptions('sgdm',...
     'InitialLearnRate',1E-3, ...
@@ -42,6 +40,5 @@ opts = trainingOptions('sgdm',...
     'ValidationFrequency', 10);
 
 mySeg.setTrainingOptions(opts);
-
 mySeg.trainNet();
 mySeg.segmentDatastore('All');
